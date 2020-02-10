@@ -1,71 +1,60 @@
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 
 import javax.crypto.Cipher;
-
-import sun.misc.BASE64Decoder;
-
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class AES {
 
   static String IV = "1234567890123456";
-  static String plaintext = "test text 123456"; /* Note null padding */
+
+  static String plaintext = "test text 123456";
+
   static String encryptionKey = "1234567890123456";
 
   public static void main(String[] args) throws Exception {
-    try {
-      System.out.println("==Java==");
-      System.out.println("plain:   " + plaintext);
+    System.out.println("==Java==");
+    System.out.println("plain:   " + plaintext);
 
-      byte[] cipher = encrypt(plaintext, encryptionKey);
+    byte[] cipher = encrypt(plaintext, encryptionKey);
 
-      System.out.print("cipher:  ");
-      for (int i = 0; i < cipher.length; i++)
-        System.out.print(Integer.toHexString(new Integer(cipher[i] & 0xFF))
-          + " ");
-      System.out.println("");
+    System.out.print("cipher:  ");
+    for (int i = 0; i < cipher.length; i++)
+      System.out.print(Integer.toHexString(new Integer(cipher[i] & 0xFF)) + " ");
+    System.out.println("");
 
-      String decrypted = decrypt(cipher, encryptionKey);
+    String decrypted = decrypt(cipher, encryptionKey);
 
-      System.out.println("decrypt: " + decrypted);
-
-    }
-    catch (Exception e) {
-      e.printStackTrace();
-    }
-    {
-      BASE64Decoder decoder = new BASE64Decoder();
-      String plainText =
-        new String(decoder.decodeBuffer(new ByteArrayInputStream(
-          "QmVybmFyZG8gQnJlZGVy".getBytes())));
-      System.out.println("PlainText : " + plainText);
-      byte[] encodedBytes =
-        decoder.decodeBuffer(new ByteArrayInputStream(
-          "zioI76eBuJRjQZWwU+kKRQ==".getBytes()));
-      System.out.println("DecryptText : "
-        + decrypt(encodedBytes, encryptionKey));
-    }
+    System.out.println("decrypt: " + decrypted);
   }
 
-  public static byte[] encrypt(String plainText, String encryptionKey)
-    throws Exception {
-    Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding", "SunJCE");
-    SecretKeySpec key =
-      new SecretKeySpec(encryptionKey.getBytes("UTF-8"), "AES");
-    cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(IV
-      .getBytes("UTF-8")));
-    return cipher.doFinal(plainText.getBytes("UTF-8"));
+  public static byte[] encrypt(String plainText, String encryptionKey) throws Exception {
+    Cipher cipher = cipher();
+    cipher.init(Cipher.ENCRYPT_MODE, secretKey(encryptionKey), iv(IV));
+    return cipher.doFinal(plainText.getBytes(UTF_8));
   }
 
-  public static String decrypt(byte[] cipherText, String encryptionKey)
-    throws Exception {
-    Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding", "SunJCE");
-    SecretKeySpec key =
-      new SecretKeySpec(encryptionKey.getBytes("UTF-8"), "AES");
-    cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(IV
-      .getBytes("UTF-8")));
-    return new String(cipher.doFinal(cipherText), "UTF-8");
+  public static String decrypt(byte[] cipherText, String encryptionKey) throws Exception {
+    Cipher cipher = cipher();
+    cipher.init(Cipher.DECRYPT_MODE, secretKey(encryptionKey), iv(IV));
+    return new String(cipher.doFinal(cipherText), UTF_8);
   }
+
+  public static Cipher cipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
+    return Cipher.getInstance("AES/CBC/NoPadding", "SunJCE");
+  }
+
+  public static SecretKeySpec secretKey(String encryptionKey) throws UnsupportedEncodingException {
+    return new SecretKeySpec(encryptionKey.getBytes(UTF_8), "AES");
+  }
+
+  public static IvParameterSpec iv(String vi) {
+    return new IvParameterSpec(vi.getBytes(UTF_8));
+  }
+
 }
