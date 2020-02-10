@@ -18,14 +18,14 @@ public class AES {
   static String encryptionKey = "1234567890123456";
 
   public static void main(String[] args) throws Exception {
-    System.out.println("==Java==");
     System.out.println("plain:   " + plaintext);
 
     byte[] cipher = encrypt(plaintext, encryptionKey);
 
     System.out.print("cipher:  ");
-    for (int i = 0; i < cipher.length; i++)
-      System.out.print(Integer.toHexString(new Integer(cipher[i] & 0xFF)) + " ");
+    for (int i = 0; i < cipher.length; i++) {
+      System.out.print(hex(cipher[i]) + " ");
+    }
     System.out.println("");
 
     String decrypted = decrypt(cipher, encryptionKey);
@@ -55,6 +55,10 @@ public class AES {
 
   public static IvParameterSpec iv(String vi) {
     return new IvParameterSpec(vi.getBytes(UTF_8));
+  }
+
+  public static String hex(int c) {
+    return Integer.toHexString(c & 0xFF);
   }
 
 }
